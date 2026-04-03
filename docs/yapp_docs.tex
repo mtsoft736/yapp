@@ -1,0 +1,653 @@
+\documentclass[11pt, a4paper]{article}
+
+% ── Packages ────────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{mdframed}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings, skins, breakable}
+
+% ── Colors ──────────────────────────────────────────────────────────────────
+\definecolor{yapporange}{RGB}{220, 95, 0}
+\definecolor{yappgray}{RGB}{245, 245, 245}
+\definecolor{yappborder}{RGB}{200, 200, 200}
+\definecolor{codebg}{RGB}{28, 28, 30}
+\definecolor{codegreen}{RGB}{106, 196, 135}
+\definecolor{codeyellow}{RGB}{255, 214, 102}
+\definecolor{codeblue}{RGB}{130, 180, 255}
+\definecolor{codepurple}{RGB}{200, 150, 255}
+\definecolor{codered}{RGB}{255, 100, 100}
+\definecolor{codecomment}{RGB}{130, 130, 130}
+\definecolor{codestring}{RGB}{255, 170, 100}
+\definecolor{warningbg}{RGB}{255, 248, 230}
+\definecolor{warningborder}{RGB}{220, 150, 0}
+\definecolor{notegreen}{RGB}{230, 248, 230}
+\definecolor{noteborder}{RGB}{60, 160, 60}
+
+% ── Listings (code blocks) ──────────────────────────────────────────────────
+\lstdefinestyle{cstyle}{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small\color{white},
+  keywordstyle=\color{codeblue}\bfseries,
+  commentstyle=\color{codecomment}\itshape,
+  stringstyle=\color{codestring},
+  identifierstyle=\color{white},
+  numberstyle=\tiny\color{codecomment},
+  numbers=left,
+  numbersep=10pt,
+  breaklines=true,
+  showstringspaces=false,
+  frame=none,
+  rulecolor=\color{yappborder},
+  xleftmargin=15pt,
+  xrightmargin=5pt,
+  aboveskip=6pt,
+  belowskip=6pt,
+  language=C,
+  morekeywords={MTAPI, YAPPAPI, size\_t, va\_list, BOOL, WINAPI,
+                HINSTANCE, DWORD, LPVOID, DLL\_PROCESS\_ATTACH,
+                CP\_UTF8, NULL, TRUE, FALSE},
+  emph={yapp, yappln, yapf},
+  emphstyle=\color{codeyellow}\bfseries,
+}
+
+\lstdefinestyle{shellstyle}{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small\color{codegreen},
+  breaklines=true,
+  showstringspaces=false,
+  frame=none,
+  xleftmargin=15pt,
+  aboveskip=6pt,
+  belowskip=6pt,
+}
+
+\lstset{style=cstyle}
+
+% ── tcolorbox styles ────────────────────────────────────────────────────────
+\tcbset{
+  codebox/.style={
+    enhanced,
+    colback=codebg,
+    colframe=yappborder,
+    arc=4pt,
+    boxrule=0.6pt,
+    left=6pt, right=6pt, top=4pt, bottom=4pt,
+    breakable,
+  },
+  warningbox/.style={
+    enhanced,
+    colback=warningbg,
+    colframe=warningborder,
+    arc=4pt,
+    boxrule=1pt,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+    fonttitle=\bfseries\small,
+    title={\textcolor{warningborder}{$\triangle$}\ \ Warning},
+  },
+  notebox/.style={
+    enhanced,
+    colback=notegreen,
+    colframe=noteborder,
+    arc=4pt,
+    boxrule=1pt,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+    fonttitle=\bfseries\small,
+    title={\textcolor{noteborder}{$\surd$}\ \ Note},
+  },
+}
+
+% ── Section styling ──────────────────────────────────────────────────────────
+\titleformat{\section}
+  {\large\bfseries\color{yapporange}}
+  {\thesection}{1em}{}[\vspace{-4pt}\rule{\linewidth}{0.5pt}\vspace{2pt}]
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{black}}
+  {\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+  {\small\bfseries\color{black}}
+  {\thesubsubsection}{1em}{}
+
+% ── Header & Footer ──────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\texttt{yapp} — Yet Another Print Protocol}
+\fancyhead[R]{\small\textcolor{yapporange}{v1.0}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Hyperref ─────────────────────────────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=yapporange,
+  urlcolor=yapporange,
+  citecolor=yapporange,
+  pdftitle={yapp Library Documentation},
+  pdfauthor={mtstdlib project},
+}
+
+% ── Helpers ──────────────────────────────────────────────────────────────────
+\newcommand{\fn}[1]{\texttt{\textbf{\textcolor{yapporange}{#1}}}}
+\newcommand{\code}[1]{\texttt{\textcolor{yapporange}{#1}}}
+\newcommand{\file}[1]{\texttt{#1}}
+\newcommand{\type}[1]{\texttt{\textit{#1}}}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+% ── Title page ───────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+
+  {\fontsize{52}{60}\selectfont\bfseries\texttt{\textcolor{yapporange}{yapp}}}
+
+  \vspace{0.4cm}
+  {\Large\textit{Yet Another Print Protocol}}
+
+  \vspace{0.3cm}
+  \rule{8cm}{0.5pt}
+
+  \vspace{0.6cm}
+  {\large A lightweight \texttt{printf} replacement as a Windows DLL}
+
+  \vspace{0.4cm}
+  {\normalsize Part of the \texttt{mtstdlib} project}
+
+  \vfill
+
+  \begin{tabular}{rl}
+    \textbf{Version}  & 1.0 \\
+    \textbf{Files}    & \texttt{yapp.h}, \texttt{yapp.c} \\
+    \textbf{Platform} & Windows (MinGW/GCC), Linux/macOS \\
+    \textbf{Language} & C99 \\
+    \textbf{License}  & MIT \\
+  \end{tabular}
+
+  \vspace{2cm}
+\end{titlepage}
+
+% ── Table of contents ────────────────────────────────────────────────────────
+\tableofcontents
+\newpage
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Overview}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\texttt{yapp} is a minimal, single-header-plus-source C library that wraps the standard
+\texttt{printf} family into three ergonomic functions: \fn{yapp}, \fn{yappln}, and \fn{yapf}.
+
+On Windows, it ships as a \textbf{DLL} and automatically sets the console code page to
+\textbf{UTF-8} the moment it is loaded — no manual setup required.
+
+\subsection{Why yapp?}
+
+\begin{itemize}[noitemsep]
+  \item Drop-in replacement for \texttt{printf} with an identical call signature.
+  \item \fn{yappln} saves you from typing \texttt{\textbackslash n} on every line.
+  \item \fn{yapf} lets you target \texttt{stderr}, a log file, or any \texttt{FILE*} stream.
+  \item \textbf{UTF-8 is enabled automatically on Windows} via \texttt{DllMain} — no
+        \texttt{SetConsoleOutputCP()} calls cluttering your \texttt{main()}.
+\end{itemize}
+
+\subsection{File Structure}
+
+\begin{center}
+\begin{tabular}{>{\ttfamily}l l}
+\toprule
+\normalfont\textbf{File} & \textbf{Purpose} \\
+\midrule
+yapp.h  & Public API — include this in your project \\
+yapp.c  & Implementation — compile into the DLL \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Building the Library}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Prerequisites}
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Windows:} MinGW-w64 with GCC (available via \href{https://www.msys2.org}{MSYS2} or
+        \href{https://winlibs.com}{WinLibs})
+  \item \textbf{Linux / macOS:} Any GCC or Clang installation
+\end{itemize}
+
+\subsection{Step 1 — Compile the DLL (Windows)}
+
+Open \textbf{PowerShell} or CMD in the folder containing \file{yapp.h} and \file{yapp.c}:
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}[style=shellstyle, numbers=none]
+gcc -shared -o yapp.dll yapp.c "-Wl,--out-implib,yapp.a" -DYAPP_EXPORTS -Wall -O2
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}[warningbox]
+The \texttt{-Wl,...} argument contains commas, which PowerShell misinterprets as argument
+separators. Wrap the entire flag in double quotes as shown above.
+\end{tcolorbox}
+
+This produces two files:
+
+\begin{center}
+\begin{tabular}{>{\ttfamily}l l}
+\toprule
+\normalfont\textbf{File} & \textbf{Purpose} \\
+\midrule
+yapp.dll & The dynamic library loaded at runtime \\
+yapp.a   & Import library used by the linker at compile time \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Step 2 — Compile Your Program}
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}[style=shellstyle, numbers=none]
+gcc -o myapp.exe main.c -L. -lyapp -I. -Wall
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{center}
+\begin{tabular}{>{\ttfamily}l l}
+\toprule
+\normalfont\textbf{Flag} & \textbf{Meaning} \\
+\midrule
+-L.      & Look for \texttt{.a} libraries in the current directory \\
+-lyapp   & Link against \texttt{yapp.a} \\
+-I.      & Look for headers (\texttt{yapp.h}) in the current directory \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Step 3 — Run}
+
+Place \file{yapp.dll} in the \textbf{same folder} as your \file{.exe}:
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}[style=shellstyle, numbers=none]
+project\
+  myapp.exe
+  yapp.dll      <-- must be here
+\end{lstlisting}
+\end{tcolorbox}
+
+Then run:
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}[style=shellstyle, numbers=none]
+.\myapp.exe
+\end{lstlisting}
+\end{tcolorbox}
+
+\subsection{Linux / macOS (shared object)}
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}[style=shellstyle, numbers=none]
+# Build shared library
+gcc -shared -fPIC -o libyapp.so yapp.c -Wall -O2
+
+# Build program
+gcc -o myapp main.c -L. -lyapp -I. -Wall
+
+# Run
+LD_LIBRARY_PATH=. ./myapp
+\end{lstlisting}
+\end{tcolorbox}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{API Reference}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+Include the header at the top of every source file that uses \texttt{yapp}:
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}
+#include "yapp.h"
+\end{lstlisting}
+\end{tcolorbox}
+
+All three functions accept \textbf{printf-style format strings} and a variadic argument list.
+The return value is the number of characters written (same contract as \texttt{printf}).
+
+% ── yapp ─────────────────────────────────────────────────────────────────────
+\subsection{\fn{yapp} — Standard Output}
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}
+int yapp(const char *fmt, ...);
+\end{lstlisting}
+\end{tcolorbox}
+
+\textbf{Direct replacement for \texttt{printf}.} Writes a formatted string to \texttt{stdout}.
+No newline is added automatically.
+
+\subsubsection*{Parameters}
+
+\begin{center}
+\begin{tabular}{>{\ttfamily}l >{\ttfamily}l l}
+\toprule
+\normalfont\textbf{Parameter} & \normalfont\textbf{Type} & \textbf{Description} \\
+\midrule
+fmt & const char* & printf-style format string \\
+... & —           & Optional format arguments \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Return Value}
+
+Number of characters written, or a negative value on error (same as \texttt{printf}).
+
+\subsubsection*{Example}
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}
+yapp("Hello, World!\n");
+yapp("Name: %s | Age: %d\n", "Matej", 20);
+yapp("Pi = %.4f\n", 3.14159);
+\end{lstlisting}
+\end{tcolorbox}
+
+% ── yappln ───────────────────────────────────────────────────────────────────
+\subsection{\fn{yappln} — Auto-Newline Output}
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}
+int yappln(const char *fmt, ...);
+\end{lstlisting}
+\end{tcolorbox}
+
+Identical to \fn{yapp}, but \textbf{appends a newline character} (\texttt{\textbackslash n})
+automatically after the formatted output. Useful when every call should occupy its own line.
+
+\subsubsection*{Return Value}
+
+Number of characters written \emph{including} the appended newline.
+
+\subsubsection*{Example}
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}
+/* These two calls produce identical output: */
+yapp("Loading...\n");
+yappln("Loading...");       /* no \n needed */
+
+yappln("Item %d: %s", 1, "apple");
+yappln("Item %d: %s", 2, "banana");
+\end{lstlisting}
+\end{tcolorbox}
+
+% ── yapf ─────────────────────────────────────────────────────────────────────
+\subsection{\fn{yapf} — Stream Output}
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}
+int yapf(void *stream, const char *fmt, ...);
+\end{lstlisting}
+\end{tcolorbox}
+
+Writes formatted output to \textbf{any \texttt{FILE*} stream} — equivalent to \texttt{fprintf}.
+The \type{void*} type avoids requiring \texttt{<stdio.h>} in \file{yapp.h} itself; pass any
+valid \texttt{FILE*} pointer.
+
+\subsubsection*{Parameters}
+
+\begin{center}
+\begin{tabular}{>{\ttfamily}l >{\ttfamily}l l}
+\toprule
+\normalfont\textbf{Parameter} & \normalfont\textbf{Type} & \textbf{Description} \\
+\midrule
+stream & void*       & Target stream (\texttt{stdout}, \texttt{stderr}, or a file) \\
+fmt    & const char* & printf-style format string \\
+...    & —           & Optional format arguments \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Example}
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}
+#include <stdio.h>   /* for stderr, fopen */
+#include "yapp.h"
+
+/* Write to stderr */
+yapf(stderr, "Error: file not found: %s\n", filename);
+
+/* Write to a log file */
+FILE *log = fopen("app.log", "a");
+if (log) {
+    yapf(log, "[INFO] Server started on port %d\n", 8080);
+    fclose(log);
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+% ── Format specifiers ─────────────────────────────────────────────────────────
+\subsection{Format Specifier Quick Reference}
+
+All three functions accept the same format specifiers as \texttt{printf}:
+
+\begin{center}
+\begin{tabular}{>{\ttfamily}c l l}
+\toprule
+\normalfont\textbf{Specifier} & \textbf{Type} & \textbf{Example} \\
+\midrule
+\%d  & Signed integer        & \texttt{yapp("\%d", 42)} $\to$ \texttt{42} \\
+\%u  & Unsigned integer      & \texttt{yapp("\%u", 255u)} $\to$ \texttt{255} \\
+\%f  & Float / double        & \texttt{yapp("\%.2f", 3.14)} $\to$ \texttt{3.14} \\
+\%e  & Scientific notation   & \texttt{yapp("\%e", 0.001)} $\to$ \texttt{1.000000e-03} \\
+\%s  & String                & \texttt{yapp("\%s", "hi")} $\to$ \texttt{hi} \\
+\%c  & Single character      & \texttt{yapp("\%c", 'A')} $\to$ \texttt{A} \\
+\%x  & Hexadecimal (lower)   & \texttt{yapp("\%x", 255)} $\to$ \texttt{ff} \\
+\%X  & Hexadecimal (upper)   & \texttt{yapp("\%X", 255)} $\to$ \texttt{FF} \\
+\%o  & Octal                 & \texttt{yapp("\%o", 8)} $\to$ \texttt{10} \\
+\%p  & Pointer address       & \texttt{yapp("\%p", ptr)} \\
+\%zu & \texttt{size\_t}      & \texttt{yapp("\%zu", sizeof(int))} \\
+\%\% & Literal percent sign  & \texttt{yapp("100\%\%")} $\to$ \texttt{100\%} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{UTF-8 Support on Windows}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+By default, the Windows console uses \textbf{code page 1250} (Central European), which
+causes characters like \texttt{á}, \texttt{č}, \texttt{ž}, \texttt{ř} to display as garbage
+when your source file is saved as UTF-8.
+
+\texttt{yapp} solves this transparently using \texttt{DllMain}:
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}
+BOOL WINAPI DllMain(HINSTANCE hinstDLL,
+                    DWORD     fdwReason,
+                    LPVOID    lpvReserved)
+{
+    if (fdwReason == DLL_PROCESS_ATTACH) {
+        SetConsoleOutputCP(CP_UTF8); /* stdout/stderr -> UTF-8 */
+        SetConsoleCP(CP_UTF8);       /* stdin         -> UTF-8 */
+    }
+    return TRUE;
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+Windows calls \texttt{DllMain} automatically whenever the DLL is loaded into a process.
+You do \textbf{not} need to call anything in your \texttt{main()} — UTF-8 is active from the
+very first instruction of your program.
+
+\begin{tcolorbox}[notebox]
+Your source files must be saved in \textbf{UTF-8 encoding} (which is the default in
+VS Code, CLion, and most modern editors). If your editor uses a different encoding,
+the characters will still not render correctly even with this fix.
+\end{tcolorbox}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Export Macros}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+The header uses a compile-time macro to switch between \texttt{dllexport} and
+\texttt{dllimport} automatically:
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}
+#ifdef _WIN32
+  #ifdef YAPP_EXPORTS
+    #define YAPPAPI __declspec(dllexport)  /* compiling the DLL */
+  #else
+    #define YAPPAPI __declspec(dllimport)  /* using the DLL     */
+  #endif
+#else
+  #define YAPPAPI                          /* Linux / macOS     */
+#endif
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{center}
+\begin{tabular}{l l l}
+\toprule
+\textbf{Situation}            & \textbf{Macro defined?}    & \textbf{Result} \\
+\midrule
+Compiling \texttt{yapp.c} $\to$ DLL & \texttt{-DYAPP\_EXPORTS} & \texttt{\_\_declspec(dllexport)} \\
+Compiling your \texttt{main.c}       & (not defined)            & \texttt{\_\_declspec(dllimport)} \\
+Linux / macOS                        & N/A                      & empty (no annotation needed) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+You never need to define \texttt{YAPP\_EXPORTS} yourself — it is only used during the
+DLL build step.
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Complete Example}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}[caption={main.c — full example using all three functions}]
+#include <stdio.h>    /* for stderr */
+#include "yapp.h"
+
+int main(void)
+{
+    /* --- yapp: same as printf --- */
+    yapp("=== yapp demo ===\n");
+    yapp("Formatted int   : %d\n",   42);
+    yapp("Formatted float : %.2f\n", 3.14159);
+    yapp("Formatted string: %s\n",   "hello");
+
+    /* --- yappln: automatic newline --- */
+    yappln("--- yappln demo ---");
+    yappln("Line %d", 1);
+    yappln("Line %d", 2);
+
+    /* --- yapf: write to stderr --- */
+    yapf(stderr, "[ERROR] Something went wrong: code %d\n", 404);
+
+    /* --- yapf: write to a file --- */
+    FILE *log = fopen("output.log", "w");
+    if (log) {
+        yapf(log, "Log entry: user=%s, status=%s\n",
+             "matej", "ok");
+        fclose(log);
+        yappln("Log written to output.log");
+    }
+
+    return 0;
+}
+\end{lstlisting}
+\end{tcolorbox}
+
+\subsection*{Expected Output}
+
+\begin{tcolorbox}[codebox]
+\begin{lstlisting}[style=shellstyle, numbers=none]
+=== yapp demo ===
+Formatted int   : 42
+Formatted float : 3.14
+Formatted string: hello
+--- yappln demo ---
+Line 1
+Line 2
+Log written to output.log
+\end{lstlisting}
+\end{tcolorbox}
+
+(\texttt{stderr} output appears interleaved in the console but is not shown above.)
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Function Summary}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\begin{center}
+\begin{tabular}{>{\ttfamily}l l l l}
+\toprule
+\normalfont\textbf{Function} & \textbf{Stream} & \textbf{Auto newline} & \textbf{Equivalent to} \\
+\midrule
+yapp(fmt, ...)         & \texttt{stdout}   & No  & \texttt{printf(fmt, ...)} \\
+yappln(fmt, ...)       & \texttt{stdout}   & Yes & \texttt{printf(fmt, ...); putchar('\textbackslash n')} \\
+yapf(stream, fmt, ...) & any \texttt{FILE*}& No  & \texttt{fprintf(stream, fmt, ...)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{Troubleshooting}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\begin{description}[style=nextline, leftmargin=0pt]
+
+\item[\texttt{Missing argument in parameter list} (PowerShell)]
+  PowerShell splits on commas in \texttt{-Wl,--out-implib,...}.
+  Wrap the flag in double quotes:\\
+  \texttt{"-Wl,--out-implib,yapp.a"}
+
+\item[Garbled characters in the console]
+  Make sure you are using the \textbf{updated} \file{yapp.c} that contains \texttt{DllMain}
+  and recompile the DLL. Also verify your source file is saved in UTF-8.
+
+\item[\texttt{yapp.dll not found} at runtime]
+  The DLL must sit in the \textbf{same directory} as your \texttt{.exe}, or be on the system
+  \texttt{PATH}. The linker-time \file{yapp.a} is only needed at compile time.
+
+\item[Linker error: \texttt{undefined reference to `yapp'}]
+  You forgot \texttt{-L. -lyapp} when compiling your program, or the \file{yapp.a}
+  import library is missing. Rerun the DLL build step.
+
+\end{description}
+
+% ═══════════════════════════════════════════════════════════════════════════════
+\section{License}
+% ═══════════════════════════════════════════════════════════════════════════════
+
+\texttt{yapp} is released under the \textbf{MIT License}.
+You are free to use, modify, and distribute it in personal and commercial projects.
+
+\vspace{1em}
+\hrule
+\vspace{0.5em}
+{\small\textit{yapp v1.0 — part of the mtstdlib project}}
+
+\end{document}

@@ -1,0 +1,7 @@
+# DLL
+gcc -shared -o yapp.dll yapp.c "-Wl,--out-implib,yapp.a" -DYAPP_EXPORTS -Wall -O2
+
+# EXE
+gcc -o demo.exe demo.c -L. -lyapp -I. -Wall
+
+.\demo.exe
